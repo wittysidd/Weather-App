@@ -1,34 +1,48 @@
 package com.example.myweatherapp
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import com.example.myweatherapp.ui.theme.comfortaFont
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun WeatherScreen(modifier: Modifier = Modifier) {
+fun WeatherScreen() {
 
     val weatherViewModel: MainViewModel = viewModel()
     val weather = weatherViewModel.weatherState.collectAsState().value
@@ -38,10 +52,30 @@ fun WeatherScreen(modifier: Modifier = Modifier) {
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Column(modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "")
+    val color1 by infiniteTransition.animateColor(
+        initialValue = Color(0xFF000000),
+        targetValue = Color(0xFF009399),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "color1"
+    )
+
+    val color2 by infiniteTransition.animateColor(
+        initialValue = Color(0xFF009197),
+        targetValue = Color(0xFF000000),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "color 2"
+    )
+
+    Column(
+        modifier = Modifier.fillMaxSize().background(brush = Brush.linearGradient(colors = listOf(color1, color2))),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ){
 
         val iconID = weather?.weather?.firstOrNull()?.icon
         val iconURL = "https://openweathermap.org/img/wn/$iconID.png"
@@ -54,15 +88,30 @@ fun WeatherScreen(modifier: Modifier = Modifier) {
         if (weather != null) {
             val weatherDetails =
                 weather.weather.firstOrNull()  // access the first element of the list or return null
-            Text("Main: ${weatherDetails?.main}", modifier = Modifier.padding(10.dp))
-            Text("Description : ${weatherDetails?.description}")
+            Text("Main: ${weatherDetails?.main}", modifier = Modifier.padding(10.dp), fontFamily = comfortaFont, color = Color.White)
+            Text("Description : ${weatherDetails?.description}", fontFamily = comfortaFont, color = Color.White)
         }
-        Text(text = "Enter City Name : ", modifier = Modifier.padding(top = 40.dp))
+        Text(text = "Enter City Name : ", modifier = Modifier.padding(top = 40.dp), fontFamily = comfortaFont, color = Color.White)
 
         OutlinedTextField(
             value = inputCity.value,
             onValueChange = { inputCity.value = it },
-            modifier = Modifier.padding(10.dp)
+            textStyle = TextStyle(
+                fontFamily = comfortaFont,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            ),
+            label = { Text("City Name", color = Color.White) },
+            singleLine = true,
+            modifier = Modifier.size(350.dp, 75.dp),
+            shape = RoundedCornerShape(40.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                cursorColor = Color.White,
+                focusedBorderColor = Color.White,
+                unfocusedBorderColor = Color.White,
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White
+            )
         )
 
         Button(
@@ -70,8 +119,7 @@ fun WeatherScreen(modifier: Modifier = Modifier) {
                 weatherViewModel.fetchWeatherDetails(inputCity.value)
                 weather?.loading = true
                 keyboardController?.hide()
-
-            },
+                      },
             modifier = Modifier.padding(bottom = 40.dp)
         ) {
             Text("How's Weather ? ")
@@ -95,22 +143,22 @@ fun WeatherScreen(modifier: Modifier = Modifier) {
         }
 
         if (location != null) {
-            Text("Name: ${location.name}", modifier = Modifier.padding(10.dp))
+            Text("Name: ${location.name}", modifier = Modifier.padding(10.dp), fontFamily = comfortaFont, color = Color.White)
         }
 
         if (weather?.loading == true) {
             // Show loading indicator
             Progress()
-            Text(text = "Loading...", modifier = Modifier.padding(10.dp))
+            Text(text = "Loading...", modifier = Modifier.padding(10.dp), fontFamily = comfortaFont, color = Color.White)
         } else if (weather?.error != null) {
-            Text("Error Occured : ${weather.error}", modifier = Modifier.padding(6.dp))
+            Text("Error Occured : ${weather.error}", modifier = Modifier.padding(6.dp), fontFamily = comfortaFont, color = Color.White)
         } else if (weather != null) {
             Text("Temp: ${weather.main.temp}", modifier = Modifier.padding(6.dp), color = colorOfTemp)
-            Text("Feels Like : ${weather.main.feels_like}", modifier = Modifier.padding(6.dp))
-            Text("Max Temp : ${weather.main.temp_max}", modifier = Modifier.padding(6.dp))
-            Text("Humidity : ${weather.main.humidity}", modifier = Modifier.padding(6.dp))
+            Text("Feels Like : ${weather.main.feels_like}", modifier = Modifier.padding(6.dp), fontFamily = comfortaFont, color = Color.White)
+            Text("Max Temp : ${weather.main.temp_max}", modifier = Modifier.padding(6.dp), fontFamily = comfortaFont, color = Color.White)
+            Text("Humidity : ${weather.main.humidity}", modifier = Modifier.padding(6.dp), fontFamily = comfortaFont, color = Color.White)
         } else {
-            Text(text = "No weather data available yet", modifier = Modifier.padding(6.dp))
+            Text(text = "No weather data available yet", modifier = Modifier.padding(6.dp), fontFamily = comfortaFont, color = Color.White)
         }
     }
 }

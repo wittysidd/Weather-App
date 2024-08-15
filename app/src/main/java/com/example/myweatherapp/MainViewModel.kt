@@ -16,7 +16,7 @@ class MainViewModel : ViewModel() {
     private var _locationState = MutableStateFlow<Location?>(Location("", 0.0,0.0, "", ""))
     val locationState: StateFlow<Location?> = _locationState.asStateFlow()
 
-    private val apiKey = "Your Api key" // Replace with your actual API key
+    private val apiKey = "b147237ccd7115e2da6ef8805c4175a2" // Replace with your actual API key
 
     fun fetchWeatherDetails(cityName: String) {
         viewModelScope.launch {
